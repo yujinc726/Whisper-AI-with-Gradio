@@ -107,7 +107,6 @@ with gr.Blocks(css=custom_css) as demo:
         
         # Right column for outputs
         with gr.Column(scale=1):
-            gr.Markdown("### Results")
             gr.Markdown("#### Raw Subtitles")
             raw_subtitles_text = gr.Textbox(
                 label="Raw Subtitles Content",
