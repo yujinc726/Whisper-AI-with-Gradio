@@ -10,8 +10,11 @@ def transcribe(file_info, decode_options, model):
     print(f'Finished transcribing.')
     return result
 
-def process_audio(audio_file, language, remove_repeated, merge, model_size):
+def process_audio(audio_file, language, remove_repeated, merge, model_size, use_stable_ts):
     """Process the uploaded audio file and generate subtitles."""
+    raw_subtitles_text = ""
+    arranged_subtitles_text = ""
+    
     if not audio_file:
         return None, None, None, None
 
@@ -38,11 +41,12 @@ def process_audio(audio_file, language, remove_repeated, merge, model_size):
         }
 
         # Load the selected model
-        model = load_model(model_size)
+        model = load_model(model_size, use_stable_ts)
 
         # Transcribe
         subtitles = transcribe(file_info, decode_options, model)
-        subtitles_path = f'download/{file_info["file_name"]}_{model_size}_stable-ts_word_ts.srt'
+        suffix = "stable-ts" if use_stable_ts else "whisper"
+        subtitles_path = f'download/{file_info["file_name"]}_{model_size}_{suffix}_word_ts.srt'
         subtitles.to_srt_vtt(subtitles_path, **srt_options)
 
         # Read raw subtitles content
@@ -51,7 +55,7 @@ def process_audio(audio_file, language, remove_repeated, merge, model_size):
 
         # Arrange subtitles
         arranged_subtitles = arrange_subtitles(subtitles_path, **arrange_options)
-        arranged_path = f'download/{file_info["file_name"]}_{model_size}_stable-ts_word_ts_arranged.srt'
+        arranged_path = f'download/{file_info["file_name"]}_{model_size}_{suffix}_word_ts_arranged.srt'
         with open(arranged_path, 'w', encoding='utf-8') as f:
             f.writelines(arranged_subtitles)
 
@@ -93,13 +97,14 @@ with gr.Blocks(css=custom_css) as demo:
                 model_size = gr.Dropdown(
                     choices=["tiny", "base", "small", "medium", "large", "large-v2", "large-v3", "turbo"],
                     value="large-v2",
-                    label="Model Size"
+                    label="Whisper Model"
                 )
                 language = gr.Dropdown(
                     choices=["Auto", "ko", "en", "ja"],
                     value="Auto",
                     label="Language"
                 )
+            use_stable_ts = gr.Checkbox(label="Use Stable-TS", value=True)
             with gr.Accordion(label="Arrange Options", open=False):
                 remove_repeated = gr.Checkbox(label="Remove Repeated Words", value=True)
                 merge = gr.Checkbox(label="Merge into Complete Sentences", value=True)
@@ -128,7 +133,7 @@ with gr.Blocks(css=custom_css) as demo:
 
     submit_btn.click(
         fn=process_audio,
-        inputs=[audio_input, language, remove_repeated, merge, model_size],
+        inputs=[audio_input, language, remove_repeated, merge, model_size, use_stable_ts],
         outputs=[raw_subtitles_text, raw_subtitles, arranged_subtitles_text, arranged_subtitles]
     )
 
