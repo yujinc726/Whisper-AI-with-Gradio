@@ -1,7 +1,6 @@
 import os
 import unicodedata
 from pathlib import Path
-import uuid
 import shutil
 
 def setup_directories():
@@ -24,7 +23,10 @@ def save_uploaded_file(audio_file, upload_dir):
     valid_extensions = ['.mp3', '.wav', '.m4a']
     if not any(audio_file.name.lower().endswith(ext) for ext in valid_extensions):
         return None
-    file_name = f"{uuid.uuid4()}{Path(audio_file.name).suffix}"
-    file_path = os.path.join(upload_dir, file_name)
+    
+    # 원본 파일명 유지
+    original_file_name = Path(audio_file.name).name
+    file_path = os.path.join(upload_dir, original_file_name)
+    
     shutil.copy(audio_file.name, file_path)
     return get_file_info(file_path)
