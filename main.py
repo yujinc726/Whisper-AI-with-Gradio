@@ -130,7 +130,7 @@ with gr.Blocks(css=custom_css) as demo:
                 merge = gr.Checkbox(label="Merge into Complete Sentences", value=True)
             prompt = gr.Textbox(
                 label = 'Prompt',
-                value = 'This is a university lecture on Natural Language Processing (NLP, 자연어처리). Instructor: Professor Yu-jin Cha (차유진진). Key terms: Recurrent Neural Network (RNN), Long Short-Term Memory (LSTM), Transformer, attention mechanism, word embeddings. Language: primarily Korean with English technical terms.',
+                value = 'This is a university lecture on Natural Language Processing (NLP, 자연어처리).\nInstructor: Professor Yu-jin Cha (차유진).\nLanguage: primarily Korean with English technical terms.\nKey terms: Recurrent Neural Network (RNN), Long Short-Term Memory (LSTM), Transformer, attention mechanism, word embeddings.',
                 lines = 5,
                 max_lines = 5,
             )
