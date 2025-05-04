@@ -131,6 +131,7 @@ with gr.Blocks(css=custom_css) as demo:
                 merge = gr.Checkbox(label="Merge into Complete Sentences", value=True)
             prompt = gr.Textbox(
                 label = 'Prompt',
+                placeholder = '강의에 대한 정보 입력 ex) 자연어처리 수업, transformer',
                 lines = 5,
                 max_lines = 5,
             )
