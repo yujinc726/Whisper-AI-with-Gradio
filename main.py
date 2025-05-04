@@ -121,7 +121,7 @@ with gr.Blocks(css=custom_css) as demo:
                     label="Model Size"
                 )
                 language = gr.Dropdown(
-                    choices=["Auto", "ko", "en", "ja"],
+                    choices=["Auto", "ko", "en", "ja", "zh", "es", "fr", "de"],
                     value="Auto",
                     label="Language"
                 )
