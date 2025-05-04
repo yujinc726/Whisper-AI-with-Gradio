@@ -2,6 +2,27 @@ import gradio as gr
 from whisper_model import load_model, cleanup_model
 from subtitle_processor import arrange_subtitles
 from file_manager import setup_directories, save_uploaded_file, get_file_info
+from datetime import timedelta
+
+def format_timestamp(seconds):
+    """초 단위 시간을 SRT 형식(HH:MM:SS,mmm)으로 변환"""
+    delta = timedelta(seconds=seconds)
+    hours, remainder = divmod(delta.total_seconds(), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    milliseconds = int((seconds % 1) * 1000)
+    seconds = int(seconds)
+    return f"{int(hours):02}:{int(minutes):02}:{seconds:02},{milliseconds:03}"
+
+def create_srt_file(transcription, output_file):
+    with open(output_file, "w", encoding="utf-8") as f:
+        i = 1
+        for segment in transcription["segments"]:
+            for word_info in segment.get("words", []):
+                start_time = format_timestamp(word_info["start"])
+                end_time = format_timestamp(word_info["end"])
+                text = word_info["word"].strip()
+                f.write(f"{i}\n{start_time} --> {end_time}\n{text}\n\n")
+                i += 1
 
 def transcribe(file_info, decode_options, model):
     """Transcribe the audio file using the Whisper model."""
@@ -10,7 +31,7 @@ def transcribe(file_info, decode_options, model):
     print(f'Finished transcribing.')
     return result
 
-def process_audio(audio_file, language, remove_repeated, merge, model_size):
+def process_audio(audio_file, language, remove_repeated, merge, model_size, stable_ts, prompt):
     """Process the uploaded audio file and generate subtitles."""
     if not audio_file:
         return None, None, None, None
@@ -26,7 +47,8 @@ def process_audio(audio_file, language, remove_repeated, merge, model_size):
             "fp16": True,
             "language": language if language != "Auto" else None,
             "verbose": False,
-            "word_timestamps": True
+            "word_timestamps": True,
+            "initial_prompt": prompt
         }
         srt_options = {
             "segment_level": False,
@@ -38,12 +60,15 @@ def process_audio(audio_file, language, remove_repeated, merge, model_size):
         }
 
         # Load the selected model
-        model = load_model(model_size)
+        model = load_model(model_size, stable_ts)
 
         # Transcribe
         subtitles = transcribe(file_info, decode_options, model)
-        subtitles_path = f'download/{file_info["file_name"]}_{model_size}_stable-ts_word_ts.srt'
-        subtitles.to_srt_vtt(subtitles_path, **srt_options)
+        subtitles_path = f'download/{file_info["file_name"]}_{model_size}_{"stable-ts" if stable_ts else ""}_word_ts.srt'
+        if stable_ts:
+            subtitles.to_srt_vtt(subtitles_path, **srt_options)
+        else:
+            create_srt_file(subtitles, subtitles_path)
 
         # Read raw subtitles content
         with open(subtitles_path, 'r', encoding='utf-8') as f:
@@ -51,7 +76,7 @@ def process_audio(audio_file, language, remove_repeated, merge, model_size):
 
         # Arrange subtitles
         arranged_subtitles = arrange_subtitles(subtitles_path, **arrange_options)
-        arranged_path = f'download/{file_info["file_name"]}_{model_size}_stable-ts_word_ts_arranged.srt'
+        arranged_path = f'download/{file_info["file_name"]}_{model_size}_{"stable-ts" if stable_ts else ""}_arranged.srt'
         with open(arranged_path, 'w', encoding='utf-8') as f:
             f.writelines(arranged_subtitles)
 
@@ -100,9 +125,15 @@ with gr.Blocks(css=custom_css) as demo:
                     value="Auto",
                     label="Language"
                 )
+            stable_ts = gr.Checkbox(label="stable-ts", value=True)
             with gr.Accordion(label="Arrange Options", open=False):
                 remove_repeated = gr.Checkbox(label="Remove Repeated Words", value=True)
                 merge = gr.Checkbox(label="Merge into Complete Sentences", value=True)
+            prompt = gr.Textbox(
+                label = 'Prompt',
+                lines = 5,
+                max_lines = 5,
+            )
             submit_btn = gr.Button("Generate Subtitles")
         
         # Right column for outputs
@@ -128,7 +159,7 @@ with gr.Blocks(css=custom_css) as demo:
 
     submit_btn.click(
         fn=process_audio,
-        inputs=[audio_input, language, remove_repeated, merge, model_size],
+        inputs=[audio_input, language, remove_repeated, merge, model_size, stable_ts, prompt],
         outputs=[raw_subtitles_text, raw_subtitles, arranged_subtitles_text, arranged_subtitles]
     )
 
