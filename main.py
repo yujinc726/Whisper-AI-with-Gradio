@@ -106,7 +106,6 @@ custom_css = """
 # Gradio Interface
 with gr.Blocks(css=custom_css) as demo:
     gr.Markdown("# Whisper AI with Gradio")
-    gr.Markdown("## 자막 생성 프로그램")
     gr.Markdown("Made by 차유진")
     
     with gr.Row():
