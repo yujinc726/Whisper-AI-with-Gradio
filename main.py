@@ -117,7 +117,7 @@ with gr.Blocks(css=custom_css) as demo:
                 model_size = gr.Dropdown(
                     choices=["tiny", "base", "small", "medium", "large", "large-v2", "large-v3", "turbo"],
                     value="turbo",
-                    label="Model Size"
+                    label="Whisper Model"
                 )
                 language = gr.Dropdown(
                     choices=["Auto", "ko", "en", "ja", "zh", "es", "fr", "de"],
