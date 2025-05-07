@@ -116,7 +116,7 @@ with gr.Blocks(css=custom_css) as demo:
             with gr.Row():
                 model_size = gr.Dropdown(
                     choices=["tiny", "base", "small", "medium", "large", "large-v2", "large-v3", "turbo"],
-                    value="large-v2",
+                    value="turbo",
                     label="Model Size"
                 )
                 language = gr.Dropdown(
@@ -129,8 +129,8 @@ with gr.Blocks(css=custom_css) as demo:
                 remove_repeated = gr.Checkbox(label="Remove Repeated Words", value=True)
                 merge = gr.Checkbox(label="Merge into Complete Sentences", value=True)
             prompt = gr.Textbox(
-                label = 'Prompt',
-                value = 'This is a university lecture on Natural Language Processing (NLP, 자연어처리).\nInstructor: Professor Yu-jin Cha (차유진).\nLanguage: primarily Korean with English technical terms.\nKey terms: Recurrent Neural Network (RNN), Long Short-Term Memory (LSTM), Transformer, attention mechanism, word embeddings.',
+                label = 'Prompt (Optional)',
+                value = '예시)\nThis is a university lecture on Natural Language Processing (NLP, 자연어처리).\nLanguage: primarily Korean with English technical terms.\nKey terms: Recurrent Neural Network (RNN), Long Short-Term Memory (LSTM), Transformer, attention mechanism, word embeddings.',
                 lines = 5,
                 max_lines = 5,
             )
